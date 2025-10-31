@@ -10,7 +10,12 @@ export default function AdminLogin() {
   // Redirect if admin already logged in
   useEffect(() => {
     const adminToken = localStorage.getItem('adminToken');
-    if (adminToken) navigate('/admin');
+    if (adminToken) {
+      setAuthToken(adminToken);
+      API.get('/auth/admin/verify')
+        .then(() => navigate('/admin'))
+        .catch(() => localStorage.removeItem('adminToken'));
+    }
   }, []);
 
   const handleLogin = async (e) => {
@@ -18,7 +23,6 @@ export default function AdminLogin() {
     try {
       const res = await API.post('/auth/admin/login', { email, password });
 
-      // Save token and set in axios
       localStorage.setItem('adminToken', res.data.token);
       localStorage.setItem('role', 'admin');
       setAuthToken(res.data.token);

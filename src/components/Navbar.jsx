@@ -1,18 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import API, { setAuthToken } from '../services/api';
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isUser, setIsUser] = useState(false);
 
-  const userToken = localStorage.getItem('token');
-  const adminToken = localStorage.getItem('adminToken');
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const adminToken = localStorage.getItem('adminToken');
+
+    // Check normal user
+    if (token) setIsUser(true);
+
+    // Check admin token validity
+    if (adminToken) {
+      setAuthToken(adminToken);
+      API.get('/auth/admin/verify') // create verify route in backend
+        .then(() => setIsAdmin(true))
+        .catch(() => {
+          localStorage.removeItem('adminToken');
+          setIsAdmin(false);
+        });
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('role');
     alert('Logged out successfully!');
-    navigate('/'); // Navigate without page reload
+    navigate('/');
   };
 
   return (
@@ -23,18 +42,18 @@ export default function Navbar() {
           <Link to="/" className="hover:underline">Home</Link>
           <Link to="/events" className="hover:underline">Events</Link>
 
-          {!userToken && !adminToken && (
+          {!isUser && !isAdmin && (
             <>
               <Link to="/auth" className="hover:underline">Login</Link>
               <Link to="/admin/login" className="hover:underline">Admin Login</Link>
             </>
           )}
 
-          {userToken && !adminToken && (
+          {isUser && !isAdmin && (
             <button onClick={handleLogout} className="hover:underline">Logout</button>
           )}
 
-          {adminToken && (
+          {isAdmin && (
             <>
               <Link to="/admin" className="hover:underline">Admin Dashboard</Link>
               <button onClick={handleLogout} className="hover:underline">Logout</button>
