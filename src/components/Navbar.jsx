@@ -3,18 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const navigate = useNavigate();
-
   const [userToken, setUserToken] = useState(null);
   const [adminToken, setAdminToken] = useState(null);
 
-  // Only read localStorage once on mount
+  // Check localStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const admin = localStorage.getItem('adminToken');
-    setUserToken(token);
-    setAdminToken(admin);
+    setUserToken(localStorage.getItem('token'));
+    setAdminToken(localStorage.getItem('adminToken'));
 
-    // Optional: listen for storage events (if login happens in another tab)
     const handleStorage = () => {
       setUserToken(localStorage.getItem('token'));
       setAdminToken(localStorage.getItem('adminToken'));
@@ -41,7 +37,7 @@ export default function Navbar() {
           <Link to="/" className="hover:underline">Home</Link>
           <Link to="/events" className="hover:underline">Events</Link>
 
-          {/* Default: nobody logged in */}
+          {/* No one logged in */}
           {!userToken && !adminToken && (
             <>
               <Link to="/auth" className="hover:underline">Login</Link>
@@ -49,7 +45,7 @@ export default function Navbar() {
             </>
           )}
 
-          {/* Normal user logged in */}
+          {/* User logged in */}
           {userToken && !adminToken && (
             <button onClick={handleLogout} className="hover:underline">Logout</button>
           )}

@@ -12,19 +12,19 @@ import UserAuth from './pages/UserAuth.jsx';
 import Footer from './components/Footer.jsx';
 import { setAuthToken } from './services/api';
 
-// Set admin token if it exists in localStorage on page load
-const token = localStorage.getItem('adminToken');
-if (token) {
-  setAuthToken(token);
-}
-
 function App() {
+  // Set token for admin or user globally on app load
+  useEffect(() => {
+    const adminToken = localStorage.getItem('adminToken');
+    const userToken = localStorage.getItem('token');
+    if (adminToken) setAuthToken(adminToken);
+    else if (userToken) setAuthToken(userToken);
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Navbar */}
       <Navbar />
 
-      {/* Main content */}
       <main className="flex-1 container mx-auto px-4 py-8">
         <Routes>
           <Route path='/' element={<Landing />} />
@@ -38,7 +38,6 @@ function App() {
         </Routes>
       </main>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import API, { setAuthToken } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,10 +6,6 @@ export default function UserAuth() {
   const [isRegister, setIsRegister] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', mobile: '' });
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setForm({ name: '', email: '', password: '', mobile: '' });
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +18,6 @@ export default function UserAuth() {
       } else {
         const res = await API.post('/auth/login', { email: form.email, password: form.password });
 
-        // Prevent admin login via UserAuth
         if (res.data.user.role === 'admin') {
           alert('Admin cannot login here. Please use Admin Login.');
           setForm({ ...form, password: '' });
@@ -32,6 +27,7 @@ export default function UserAuth() {
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('role', 'user');
         setAuthToken(res.data.token);
+
         alert('Login successful!');
         setForm({ name: '', email: '', password: '', mobile: '' });
         navigate('/');

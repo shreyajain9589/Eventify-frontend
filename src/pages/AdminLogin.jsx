@@ -7,7 +7,6 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  // Redirect if admin already logged in
   useEffect(() => {
     const adminToken = localStorage.getItem('adminToken');
     if (adminToken) {
@@ -16,13 +15,12 @@ export default function AdminLogin() {
         .then(() => navigate('/admin'))
         .catch(() => localStorage.removeItem('adminToken'));
     }
-  }, []);
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const res = await API.post('/auth/admin/login', { email, password });
-
       localStorage.setItem('adminToken', res.data.token);
       localStorage.setItem('role', 'admin');
       setAuthToken(res.data.token);
