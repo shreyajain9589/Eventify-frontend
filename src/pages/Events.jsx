@@ -99,8 +99,8 @@ export default function Events() {
         )}
       </div>
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer
+      <Footer /> */}
     </div>
   );
 }
