@@ -1,37 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import API, { setAuthToken } from '../services/api';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isUser, setIsUser] = useState(false);
+  const [userToken, setUserToken] = useState(localStorage.getItem('token'));
+  const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken'));
 
+  // Keep tokens in sync with localStorage
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const adminToken = localStorage.getItem('adminToken');
+    const handleStorageChange = () => {
+      setUserToken(localStorage.getItem('token'));
+      setAdminToken(localStorage.getItem('adminToken'));
+    };
 
-    // Check normal user
-    if (token) setIsUser(true);
-
-    // Check admin token validity
-    if (adminToken) {
-      setAuthToken(adminToken);
-      API.get('/auth/admin/verify') // create verify route in backend
-        .then(() => setIsAdmin(true))
-        .catch(() => {
-          localStorage.removeItem('adminToken');
-          setIsAdmin(false);
-        });
-    }
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('role');
+    setUserToken(null);
+    setAdminToken(null);
     alert('Logged out successfully!');
-    navigate('/');
+    navigate('/'); // navigate without reload
   };
 
   return (
@@ -42,18 +35,18 @@ export default function Navbar() {
           <Link to="/" className="hover:underline">Home</Link>
           <Link to="/events" className="hover:underline">Events</Link>
 
-          {!isUser && !isAdmin && (
+          {!userToken && !adminToken && (
             <>
               <Link to="/auth" className="hover:underline">Login</Link>
               <Link to="/admin/login" className="hover:underline">Admin Login</Link>
             </>
           )}
 
-          {isUser && !isAdmin && (
+          {userToken && !adminToken && (
             <button onClick={handleLogout} className="hover:underline">Logout</button>
           )}
 
-          {isAdmin && (
+          {adminToken && (
             <>
               <Link to="/admin" className="hover:underline">Admin Dashboard</Link>
               <button onClick={handleLogout} className="hover:underline">Logout</button>
