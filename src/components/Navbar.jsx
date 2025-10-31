@@ -7,18 +7,20 @@ export default function Navbar() {
   const [userToken, setUserToken] = useState(null);
   const [adminToken, setAdminToken] = useState(null);
 
-  // Sync navbar state with localStorage
+  // Only read localStorage once on mount
   useEffect(() => {
-    setUserToken(localStorage.getItem('token'));
-    setAdminToken(localStorage.getItem('adminToken'));
+    const token = localStorage.getItem('token');
+    const admin = localStorage.getItem('adminToken');
+    setUserToken(token);
+    setAdminToken(admin);
 
-    const handleStorageChange = () => {
+    // Optional: listen for storage events (if login happens in another tab)
+    const handleStorage = () => {
       setUserToken(localStorage.getItem('token'));
       setAdminToken(localStorage.getItem('adminToken'));
     };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   const handleLogout = () => {
@@ -39,7 +41,7 @@ export default function Navbar() {
           <Link to="/" className="hover:underline">Home</Link>
           <Link to="/events" className="hover:underline">Events</Link>
 
-          {/* No one logged in */}
+          {/* Default: nobody logged in */}
           {!userToken && !adminToken && (
             <>
               <Link to="/auth" className="hover:underline">Login</Link>
