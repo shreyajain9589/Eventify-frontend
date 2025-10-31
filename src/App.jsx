@@ -1,5 +1,5 @@
-import './App.css'
-import React from 'react'
+import './App.css';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing.jsx';
 import Events from './pages/Events.jsx';
@@ -10,6 +10,13 @@ import AdminLogin from './pages/AdminLogin.jsx';
 import Navbar from './components/Navbar.jsx';
 import UserAuth from './pages/UserAuth.jsx';
 import Footer from './components/Footer.jsx';
+import { setAuthToken } from './services/api';
+
+// Set admin token if it exists in localStorage on page load
+const token = localStorage.getItem('adminToken');
+if (token) {
+  setAuthToken(token);
+}
 
 function App() {
   return (
@@ -27,7 +34,6 @@ function App() {
           <Route path='/admin' element={<AdminDashboard />} />
           <Route path='/admin/login' element={<AdminLogin />} />
           <Route path='/auth' element={<UserAuth />} />
-          {/* Keep /login for legacy links */}
           <Route path='/login' element={<UserAuth />} />
         </Routes>
       </main>
@@ -35,7 +41,7 @@ function App() {
       {/* Footer */}
       <Footer />
     </div>
-  )
+  );
 }
 
 export default App;

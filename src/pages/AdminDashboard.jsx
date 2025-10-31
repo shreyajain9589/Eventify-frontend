@@ -9,14 +9,14 @@ export default function AdminDashboard() {
     title: '', description: '', location: '', date: '', total_seats: '', price: '', img: ''
   });
 
-  // ✅ Check for token on load
+  // ✅ Check for admin token on load
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please login as admin first');
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+      alert('Login as admin first!');
       window.location.href = '/admin/login';
     } else {
-      setAuthToken(token);
+      setAuthToken(adminToken);
       fetchEvents();
     }
   }, []);
@@ -35,27 +35,27 @@ export default function AdminDashboard() {
     e.preventDefault();
     try {
       if (editingEvent) {
-  // Update existing event
-  const updatedData = {
-    ...form,
-    total_seats: Number(form.total_seats),
-    available_seats: Number(form.total_seats) // reset available seats to total seats
-  };
+        // Update existing event
+        const updatedData = {
+          ...form,
+          total_seats: Number(form.total_seats),
+          available_seats: Number(form.total_seats) // reset available seats
+        };
 
-  const res = await API.put(`/events/${editingEvent._id}`, updatedData, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  });
+        const res = await API.put(`/events/${editingEvent._id}`, updatedData, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+        });
 
-  setEvents(events.map(ev => ev._id === editingEvent._id ? res.data : ev));
-  setEditingEvent(null);
-}
-else {
+        setEvents(events.map(ev => ev._id === editingEvent._id ? res.data : ev));
+        setEditingEvent(null);
+      } else {
         // Create new event
         const res = await API.post('/events', form, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
         });
         setEvents([...events, res.data]);
       }
+
       setForm({ title:'', description:'', location:'', date:'', total_seats:'', price:'', img:'' });
     } catch (err) {
       console.error(err);

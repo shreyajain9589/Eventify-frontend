@@ -7,18 +7,18 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  // Redirect if admin already logged in
   useEffect(() => {
-    setEmail('');
-    setPassword('');
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken) navigate('/admin');
   }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Call admin login endpoint
       const res = await API.post('/auth/admin/login', { email, password });
 
-      // Save admin token
+      // Save token and set in axios
       localStorage.setItem('adminToken', res.data.token);
       localStorage.setItem('role', 'admin');
       setAuthToken(res.data.token);
@@ -26,7 +26,7 @@ export default function AdminLogin() {
       alert('Admin login successful!');
       setEmail('');
       setPassword('');
-      navigate('/admin'); // redirect to admin dashboard
+      navigate('/admin');
     } catch (err) {
       alert('Login failed: ' + (err.response?.data?.message || err.message));
       setPassword('');
