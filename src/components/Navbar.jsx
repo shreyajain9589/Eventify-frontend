@@ -3,12 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  
-  // Start with no tokens (fresh app start)
+
   const [userToken, setUserToken] = useState(null);
   const [adminToken, setAdminToken] = useState(null);
 
-  // Sync with localStorage when app runs or login/logout happens
+  // Sync navbar state with localStorage
   useEffect(() => {
     setUserToken(localStorage.getItem('token'));
     setAdminToken(localStorage.getItem('adminToken'));
@@ -29,7 +28,7 @@ export default function Navbar() {
     setUserToken(null);
     setAdminToken(null);
     alert('Logged out successfully!');
-    navigate('/'); // navigate without reload
+    navigate('/');
   };
 
   return (
@@ -40,6 +39,7 @@ export default function Navbar() {
           <Link to="/" className="hover:underline">Home</Link>
           <Link to="/events" className="hover:underline">Events</Link>
 
+          {/* No one logged in */}
           {!userToken && !adminToken && (
             <>
               <Link to="/auth" className="hover:underline">Login</Link>
@@ -47,10 +47,12 @@ export default function Navbar() {
             </>
           )}
 
+          {/* Normal user logged in */}
           {userToken && !adminToken && (
             <button onClick={handleLogout} className="hover:underline">Logout</button>
           )}
 
+          {/* Admin logged in */}
           {adminToken && (
             <>
               <Link to="/admin" className="hover:underline">Admin Dashboard</Link>
