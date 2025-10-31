@@ -10,26 +10,33 @@ export default function Events() {
   const [events, setEvents] = useState([]);
   const [q, setQ] = useState('');
   const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(true); // ✅ add loading state
 
   const fetchEvents = async () => {
+    setLoading(true);
     try {
       const res = await API.get('/events', { params: { q, location } });
       setEvents(res.data);
     } catch (err) {
       console.error(err);
       alert('Failed to fetch events');
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchAllEvents = async () => {
     setQ('');
     setLocation('');
+    setLoading(true);
     try {
       const res = await API.get('/events'); // no filters
       setEvents(res.data);
     } catch (err) {
       console.error(err);
       alert('Failed to fetch all events');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,7 +63,7 @@ export default function Events() {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* 🔍 Search Form */}
+        {/* Search Form */}
         <form onSubmit={onSearch} className="flex flex-col md:flex-row gap-2 mb-6">
           <input
             value={q}
@@ -78,8 +85,12 @@ export default function Events() {
           </button>
         </form>
 
-        {/* 🧾 Event List */}
-        {events.length > 0 ? (
+        {/* Event List / Loading / No Events */}
+        {loading ? (
+          <div className="text-center text-gray-600 py-20">
+            <h3 className="text-xl font-semibold">Loading events...</h3>
+          </div>
+        ) : events.length > 0 ? (
           <div className="grid md:grid-cols-3 gap-6">
             {events.map(ev => (
               <EventCard key={ev._id} event={ev} />
@@ -99,8 +110,8 @@ export default function Events() {
         )}
       </div>
 
-      {/* Footer
-      <Footer /> */}
+      {/* Footer */}
+      {/* <Footer /> */}
     </div>
   );
 }
