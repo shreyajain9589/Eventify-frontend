@@ -1,17 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import API from '../services/api';
+import API, { setAuthToken } from '../services/api';
 
 export default function EventCard({ event, isAdmin = false, onDelete, onEdit }) {
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this event?')) return;
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return alert('Admin login required');
-      await API.delete(`/events/${event._id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Use admin token if isAdmin
+      const token = isAdmin ? localStorage.getItem('adminToken') : localStorage.getItem('token');
+      if (!token) return alert(isAdmin ? 'Admin login required' : 'Login required');
+      
+      // Set token globally for API
+      setAuthToken(token);
+
+      await API.delete(`/events/${event._id}`); // token automatically included
       onDelete && onDelete(event._id); // callback to parent
       alert('Event deleted successfully');
     } catch (err) {

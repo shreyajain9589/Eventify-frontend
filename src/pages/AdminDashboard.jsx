@@ -74,14 +74,22 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (deletedId) => {
-    try {
-      await API.delete(`/events/${deletedId}`); // token is already set globally
-      setEvents(events.filter(e => e._id !== deletedId));
-    } catch (err) {
-      console.error(err);
-      alert('Failed to delete event. Make sure you are logged in as admin.');
+  try {
+    const adminToken = localStorage.getItem('adminToken'); // always get the current token
+    if (!adminToken) {
+      alert('Login as admin first!');
+      window.location.href = '/admin/login';
+      return;
     }
-  };
+    setAuthToken(adminToken); // set token globally just before deleting
+    await API.delete(`/events/${deletedId}`); // token sent automatically
+    setEvents(events.filter(e => e._id !== deletedId));
+  } catch (err) {
+    console.error(err);
+    alert('Failed to delete event. Make sure you are logged in as admin.');
+  }
+};
+
 
   const handleEdit = (event) => {
     setEditingEvent(event);
