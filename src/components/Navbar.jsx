@@ -3,11 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const [userToken, setUserToken] = useState(localStorage.getItem('token'));
-  const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken'));
+  
+  // Start with no tokens (fresh app start)
+  const [userToken, setUserToken] = useState(null);
+  const [adminToken, setAdminToken] = useState(null);
 
-  // Keep tokens in sync with localStorage
+  // Sync with localStorage when app runs or login/logout happens
   useEffect(() => {
+    setUserToken(localStorage.getItem('token'));
+    setAdminToken(localStorage.getItem('adminToken'));
+
     const handleStorageChange = () => {
       setUserToken(localStorage.getItem('token'));
       setAdminToken(localStorage.getItem('adminToken'));
