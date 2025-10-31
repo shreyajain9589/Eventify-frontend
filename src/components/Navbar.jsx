@@ -1,33 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const [userToken, setUserToken] = useState(null);
-  const [adminToken, setAdminToken] = useState(null);
-
-  // Check localStorage on mount
-  useEffect(() => {
-    setUserToken(localStorage.getItem('token'));
-    setAdminToken(localStorage.getItem('adminToken'));
-
-    const handleStorage = () => {
-      setUserToken(localStorage.getItem('token'));
-      setAdminToken(localStorage.getItem('adminToken'));
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('role');
-    setUserToken(null);
-    setAdminToken(null);
     alert('Logged out successfully!');
     navigate('/');
   };
+
+  // Read tokens directly from localStorage on render
+  const userToken = localStorage.getItem('token');
+  const adminToken = localStorage.getItem('adminToken');
 
   return (
     <nav className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md">
@@ -37,7 +24,7 @@ export default function Navbar() {
           <Link to="/" className="hover:underline">Home</Link>
           <Link to="/events" className="hover:underline">Events</Link>
 
-          {/* No one logged in */}
+          {/* Nobody logged in */}
           {!userToken && !adminToken && (
             <>
               <Link to="/auth" className="hover:underline">Login</Link>
@@ -45,7 +32,7 @@ export default function Navbar() {
             </>
           )}
 
-          {/* User logged in */}
+          {/* Normal user logged in */}
           {userToken && !adminToken && (
             <button onClick={handleLogout} className="hover:underline">Logout</button>
           )}
