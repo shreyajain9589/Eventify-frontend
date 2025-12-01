@@ -51,10 +51,10 @@ export default function EventsTab() {
     try {
       const res = await API.get('/events');
       const now = new Date();
-      const upcomingEvents = res.data.filter(event => new Date(event.date) >= now);
-      setEvents(upcomingEvents);
+      const upcoming = res.data.filter(event => new Date(event.date) >= now);
+      setEvents(upcoming);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to fetch events');
+      toast.error(err.message || 'Failed to fetch events');
     } finally {
       setIsLoading(false);
     }
@@ -63,61 +63,53 @@ export default function EventsTab() {
   const fetchLocations = async () => {
     try {
       const res = await API.get('/admin/locations');
-      
-      // Handle both response formats
+
       let locationsData = [];
       if (Array.isArray(res.data)) {
         locationsData = res.data;
-      } else if (res.data && res.data.data && Array.isArray(res.data.data)) {
+      } else if (Array.isArray(res.data?.data)) {
         locationsData = res.data.data;
       }
-      
       setLocations(locationsData.map(loc => loc.displayName));
-    } catch (err) {
-      // Fallback to empty array if locations fetch fails - not critical
-      setLocations([]);
+    } catch {
+      setLocations([]); // safe fallback
     }
   };
 
   const createOrUpdateEvent = form.handleSubmit(async (values) => {
     try {
       const finalLocation = values.location === 'Other' ? customLocation : values.location;
-      
+
       if (values.location === 'Other' && !customLocation.trim()) {
         toast.error('Please enter a custom location');
         return;
       }
-      
+
+      const payload = {
+        ...values,
+        location: finalLocation,
+        total_seats: Number(values.total_seats),
+        available_seats: Number(values.total_seats),
+        price: Number(values.price),
+      };
+
       if (editingEvent) {
-        const updatedData = {
-          ...values,
-          location: finalLocation,
-          total_seats: Number(values.total_seats),
-          available_seats: Number(values.total_seats),
-          price: Number(values.price)
-        };
-        const res = await API.put(`/events/${editingEvent._id}`, updatedData);
-        setEvents(events.map(ev => ev._id === editingEvent._id ? res.data : ev));
+        const res = await API.put(`/events/${editingEvent._id}`, payload);
+        setEvents(events.map(ev => (ev._id === editingEvent._id ? res.data : ev)));
         toast.success('Event updated successfully');
         setEditingEvent(null);
       } else {
-        const eventData = {
-          ...values,
-          location: finalLocation,
-          total_seats: Number(values.total_seats),
-          available_seats: Number(values.total_seats),
-          price: Number(values.price)
-        };
-        const res = await API.post('/events', eventData);
+        const res = await API.post('/events', payload);
         setEvents([...events, res.data]);
         toast.success('Event created successfully');
       }
+
       form.reset();
       setImagePreview('');
       setShowCustomLocation(false);
       setCustomLocation('');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save event');
+      toast.error(err.message || 'Failed to save event');
     }
   });
 
@@ -134,7 +126,7 @@ export default function EventsTab() {
       setEvents(events.filter(e => e._id !== eventToDelete._id));
       toast.success('Event deleted successfully');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to delete event');
+      toast.error(err.message || 'Failed to delete event');
     } finally {
       setDeleteModalOpen(false);
       setEventToDelete(null);
@@ -143,27 +135,27 @@ export default function EventsTab() {
 
   const handleEdit = (event) => {
     setEditingEvent(event);
-    
-    const isCustomLocation = !locations.includes(event.location);
-    
+
+    const isCustom = !locations.includes(event.location);
+
     form.setValues({
       title: event.title,
       description: event.description,
-      location: isCustomLocation ? 'Other' : event.location,
+      location: isCustom ? 'Other' : event.location,
       date: new Date(event.date).toISOString().slice(0, 16),
-      total_seats: event.total_seats.toString(),
-      price: event.price.toString(),
-      img: event.img
+      total_seats: String(event.total_seats),
+      price: String(event.price),
+      img: event.img,
     });
-    
-    if (isCustomLocation) {
+
+    if (isCustom) {
       setShowCustomLocation(true);
       setCustomLocation(event.location);
     } else {
       setShowCustomLocation(false);
       setCustomLocation('');
     }
-    
+
     setImagePreview(event.img);
   };
 
@@ -199,16 +191,15 @@ export default function EventsTab() {
         <h3 className="text-xl font-semibold mb-4">
           {editingEvent ? 'Edit Event' : 'Create New Event'}
         </h3>
-        
+
         <form onSubmit={createOrUpdateEvent} className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <Input
               label="Event Title"
               value={form.values.title}
-              onChange={(value) => form.handleChange('title', value)}
+              onChange={(v) => form.handleChange('title', v)}
               onBlur={() => form.handleBlur('title')}
               error={form.touched.title && form.errors.title}
-              placeholder="Enter event title"
               required
             />
 
@@ -216,12 +207,13 @@ export default function EventsTab() {
               label="Date & Time"
               type="datetime-local"
               value={form.values.date}
-              onChange={(value) => form.handleChange('date', value)}
+              onChange={(v) => form.handleChange('date', v)}
               onBlur={() => form.handleBlur('date')}
               error={form.touched.date && form.errors.date}
               required
             />
 
+            {/* Location */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Location <span className="text-red-500">*</span>
@@ -230,7 +222,7 @@ export default function EventsTab() {
                 value={form.values.location}
                 onChange={(e) => handleLocationChange(e.target.value)}
                 onBlur={() => form.handleBlur('location')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
                 required
               >
                 <option value="">Select location</option>
@@ -240,19 +232,15 @@ export default function EventsTab() {
                   </option>
                 ))}
               </select>
-              {form.touched.location && form.errors.location && (
-                <p className="mt-1 text-sm text-red-600">{form.errors.location}</p>
-              )}
             </div>
 
             <Input
               label="Price (₹)"
               type="number"
               value={form.values.price}
-              onChange={(value) => form.handleChange('price', value)}
+              onChange={(v) => form.handleChange('price', v)}
               onBlur={() => form.handleBlur('price')}
               error={form.touched.price && form.errors.price}
-              placeholder="Enter ticket price"
               required
             />
 
@@ -260,10 +248,9 @@ export default function EventsTab() {
               label="Total Seats"
               type="number"
               value={form.values.total_seats}
-              onChange={(value) => form.handleChange('total_seats', value)}
+              onChange={(v) => form.handleChange('total_seats', v)}
               onBlur={() => form.handleBlur('total_seats')}
               error={form.touched.total_seats && form.errors.total_seats}
-              placeholder="Enter total seats"
               required
             />
 
@@ -273,7 +260,6 @@ export default function EventsTab() {
               onChange={handleImageChange}
               onBlur={() => form.handleBlur('img')}
               error={form.touched.img && form.errors.img}
-              placeholder="Enter image URL"
               required
             />
           </div>
@@ -283,7 +269,7 @@ export default function EventsTab() {
               label="Custom Location"
               value={customLocation}
               onChange={setCustomLocation}
-              placeholder="Enter custom location (e.g., Paris, France)"
+              placeholder="Enter custom location"
               required
             />
           )}
@@ -291,21 +277,20 @@ export default function EventsTab() {
           <Input
             label="Description"
             value={form.values.description}
-            onChange={(value) => form.handleChange('description', value)}
+            onChange={(v) => form.handleChange('description', v)}
             onBlur={() => form.handleBlur('description')}
             error={form.touched.description && form.errors.description}
-            placeholder="Enter event description"
             required
           />
 
           {imagePreview && (
             <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block mb-2 text-sm font-medium text-gray-700">
                 Image Preview
               </label>
               <img
                 src={imagePreview}
-                alt="Event preview"
+                alt="preview"
                 className="w-full max-w-md h-48 object-cover rounded-lg"
                 onError={(e) => {
                   e.target.style.display = 'none';
@@ -323,7 +308,7 @@ export default function EventsTab() {
             >
               {editingEvent ? 'Update Event' : 'Create Event'}
             </LoadingButton>
-            
+
             {editingEvent && (
               <LoadingButton
                 type="button"
@@ -340,18 +325,18 @@ export default function EventsTab() {
       {/* Events List */}
       <div>
         <h3 className="text-xl font-semibold mb-4">Upcoming Events ({events.length})</h3>
-        
+
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="animate-spin h-12 w-12 border-b-2 border-indigo-600 rounded-full"></div>
           </div>
         ) : events.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
-            <p className="text-gray-600">No events created yet. Create your first event above!</p>
+            <p className="text-gray-600">No events created yet.</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {events.map(ev => (
+            {events.map((ev) => (
               <EventCard
                 key={ev._id}
                 event={ev}
@@ -373,20 +358,14 @@ export default function EventsTab() {
         <div className="space-y-4">
           <p className="text-gray-700">
             Are you sure you want to delete <strong>{eventToDelete?.title}</strong>?
-            This action cannot be undone.
           </p>
-          
+
           <div className="flex gap-3 justify-end">
-            <LoadingButton
-              variant="secondary"
-              onClick={() => setDeleteModalOpen(false)}
-            >
+            <LoadingButton variant="secondary" onClick={() => setDeleteModalOpen(false)}>
               Cancel
             </LoadingButton>
-            <LoadingButton
-              variant="danger"
-              onClick={confirmDelete}
-            >
+
+            <LoadingButton variant="danger" onClick={confirmDelete}>
               Delete Event
             </LoadingButton>
           </div>

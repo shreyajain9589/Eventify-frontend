@@ -14,21 +14,15 @@ export default function Modal({
   const modalRef = useRef(null);
   const previousActiveElement = useRef(null);
 
+  // Lock scroll + focus modal
   useEffect(() => {
     if (isOpen) {
-      // Store the currently focused element
       previousActiveElement.current = document.activeElement;
-      
-      // Prevent body scroll
+
       document.body.style.overflow = 'hidden';
-      
-      // Focus the modal
       modalRef.current?.focus();
     } else {
-      // Restore body scroll
       document.body.style.overflow = 'unset';
-      
-      // Restore focus to the previously focused element
       previousActiveElement.current?.focus();
     }
 
@@ -37,20 +31,19 @@ export default function Modal({
     };
   }, [isOpen]);
 
+  // Escape key
   useEffect(() => {
     if (!closeOnEscape || !isOpen) return;
 
     const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [closeOnEscape, isOpen, onClose]);
 
-  // Focus trap implementation
+  // Focus trap
   useEffect(() => {
     if (!isOpen) return;
 
@@ -58,24 +51,23 @@ export default function Modal({
       if (e.key !== 'Tab') return;
 
       const focusableElements = modalRef.current?.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        'a[href], button:not([disabled]), textarea, input:not([disabled]), select, [tabindex]:not([tabindex="-1"])'
       );
-      
+
       if (!focusableElements || focusableElements.length === 0) return;
 
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
 
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          lastElement.focus();
-          e.preventDefault();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          firstElement.focus();
-          e.preventDefault();
-        }
+      // SHIFT + TAB
+      if (e.shiftKey && document.activeElement === first) {
+        last.focus();
+        e.preventDefault();
+      }
+      // TAB ONLY
+      else if (!e.shiftKey && document.activeElement === last) {
+        first.focus();
+        e.preventDefault();
       }
     };
 
@@ -84,14 +76,11 @@ export default function Modal({
   }, [isOpen]);
 
   const handleOverlayClick = (e) => {
-    if (closeOnOverlayClick && e.target === e.currentTarget) {
-      onClose();
-    }
+    if (closeOnOverlayClick && e.target === e.currentTarget) onClose();
   };
 
-  if (!isOpen) return null;
-
-  const modalContent = (
+  // Final modal content (no early return — lets AnimatePresence animate exit)
+  const modalNode = (
     <AnimatePresence>
       {isOpen && (
         <div
@@ -103,24 +92,23 @@ export default function Modal({
         >
           {/* Overlay */}
           <motion.div
+            className="absolute inset-0 bg-black/50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/50"
           />
 
-          {/* Modal Content */}
+          {/* Modal Box */}
           <motion.div
             ref={modalRef}
+            tabIndex={-1}
+            className="relative bg-white rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="relative bg-white rounded-lg shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-            tabIndex={-1}
           >
-            {/* Header */}
             {(title || showCloseButton) && (
               <div className="flex items-center justify-between p-4 border-b">
                 {title && (
@@ -128,20 +116,21 @@ export default function Modal({
                     {title}
                   </h2>
                 )}
+
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
                     aria-label="Close modal"
+                    className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition"
                   >
                     <svg
                       className="w-6 h-6"
                       fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                      stroke="currentColor"
                       strokeWidth="2"
                       viewBox="0 0 24 24"
-                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     >
                       <path d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -150,15 +139,12 @@ export default function Modal({
               </div>
             )}
 
-            {/* Body */}
-            <div className="p-4">
-              {children}
-            </div>
+            <div className="p-4">{children}</div>
           </motion.div>
         </div>
       )}
     </AnimatePresence>
   );
 
-  return createPortal(modalContent, document.body);
+  return createPortal(modalNode, document.body);
 }

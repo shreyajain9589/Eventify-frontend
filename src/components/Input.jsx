@@ -47,6 +47,7 @@ const Input = forwardRef(({
           ref={ref}
           type={type}
           value={value}
+          autoComplete='off'
           onChange={handleChange}
           placeholder={placeholder}
           disabled={disabled}

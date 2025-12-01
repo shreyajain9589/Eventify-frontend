@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { setAuthToken } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+
 import UsersTab from '../components/admin/UsersTab';
 import LocationsTab from '../components/admin/LocationsTab';
 import EventsTab from '../components/admin/EventsTab';
@@ -16,16 +18,28 @@ const tabs = [
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('events');
   const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const adminToken = localStorage.getItem('adminToken');
+
     if (!adminToken) {
       toast.error('Please login as admin first');
-      window.location.href = '/admin/login';
-    } else {
-      setAuthToken(adminToken);
+      navigate('/admin/login');
+      return;
     }
-  }, [toast]);
+
+    setAuthToken(adminToken);
+
+    // Restore last active tab if saved
+    const savedTab = localStorage.getItem('adminActiveTab');
+    if (savedTab) setActiveTab(savedTab);
+  }, [navigate, toast]);
+
+  // Save active tab
+  useEffect(() => {
+    localStorage.setItem('adminActiveTab', activeTab);
+  }, [activeTab]);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -42,9 +56,13 @@ export default function AdminDashboard() {
     }
   };
 
+  // Prevent flicker before redirect
+  if (!localStorage.getItem('adminToken')) return null;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -61,9 +79,10 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`
                     flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
-                    ${activeTab === tab.id
-                      ? 'border-indigo-600 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ${
+                      activeTab === tab.id
+                        ? 'border-indigo-600 text-indigo-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }
                   `}
                 >
@@ -81,6 +100,7 @@ export default function AdminDashboard() {
             {renderTabContent()}
           </div>
         </div>
+
       </div>
     </div>
   );

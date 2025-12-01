@@ -12,3 +12,15 @@ a,
 button:disabled {
   cursor: not-allowed;
 }
+
+/* Global cursor styles for interactive elements */
+button:not(:disabled),
+a,
+[role="button"],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}

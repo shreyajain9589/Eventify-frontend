@@ -25,47 +25,7 @@ const sampleUsers = [
     event: 'Food Carnival',
     bookingDate: '2024-11-20',
     quantity: 4
-  },
-  {
-    id: 4,
-    name: 'Sneha Reddy',
-    email: 'sneha.reddy@example.com',
-    event: 'Tech Conference 2024',
-    bookingDate: '2024-11-22',
-    quantity: 1
-  },
-  {
-    id: 5,
-    name: 'Vikram Singh',
-    email: 'vikram.singh@example.com',
-    event: 'Art Exhibition',
-    bookingDate: '2024-11-25',
-    quantity: 3
-  },
-  {
-    id: 6,
-    name: 'Ananya Iyer',
-    email: 'ananya.iyer@example.com',
-    event: 'Music Festival',
-    bookingDate: '2024-11-28',
-    quantity: 2
-  },
-  {
-    id: 7,
-    name: 'Rahul Verma',
-    email: 'rahul.verma@example.com',
-    event: 'Sports Tournament',
-    bookingDate: '2024-11-30',
-    quantity: 1
-  },
-  {
-    id: 8,
-    name: 'Kavya Nair',
-    email: 'kavya.nair@example.com',
-    event: 'Food Carnival',
-    bookingDate: '2024-12-02',
-    quantity: 2
-  },
+  }
 ];
 
 export default function RegisteredUsersTable() {
@@ -128,44 +88,29 @@ export default function RegisteredUsersTable() {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredUsers.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
-                  No users found matching your search
-                </td>
-              </tr>
-            ) : (
-              filteredUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {user.name}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">{user.email}</div>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{user.event}</div>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-600">
-                      {new Date(user.bookingDate).toLocaleDateString()}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                      {user.quantity} {user.quantity === 1 ? 'ticket' : 'tickets'}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
+          <tbody>
+  {users.map((u) => (
+    <tr key={u._id} className="border-t hover:bg-gray-50">
+      <td className="py-3 px-4">{u.name}</td>
+      <td className="py-3 px-4">{u.email}</td>
+
+      {/* FIXED — USERS DON'T HAVE MOBILE → USE LAST BOOKING MOBILE */}
+      <td className="py-3 px-4">
+        {u.lastBooking?.mobile || "--"}
+      </td>
+
+      <td className="py-3 px-4">
+        <button
+          onClick={() => viewBookings(u)}
+          className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+        >
+          View Bookings
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
         </table>
       </div>
 

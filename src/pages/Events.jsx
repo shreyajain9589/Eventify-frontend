@@ -5,8 +5,6 @@ import EventCard from '../components/EventCard';
 import { useToast } from '../contexts/ToastContext';
 import io from 'socket.io-client';
 
-const socket = io(import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000');
-
 export default function Events() {
   const [events, setEvents] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -15,75 +13,93 @@ export default function Events() {
   const [loading, setLoading] = useState(true);
   const toast = useToast();
 
+  // Fetch all locations
+  const fetchLocations = async () => {
+    try {
+      const res = await API.get('/admin/locations');
+
+      let locationsData = [];
+      if (Array.isArray(res.data)) {
+        locationsData = res.data;
+      } else if (res.data?.data && Array.isArray(res.data.data)) {
+        locationsData = res.data.data;
+      }
+
+      setLocations(locationsData.map((loc) => loc.displayName));
+    } catch (err) {
+      toast.error('Failed to load locations');
+      setLocations([]);
+    }
+  };
+
+  // Fetch events with filters
   const fetchEvents = async () => {
     setLoading(true);
     try {
       const res = await API.get('/events', { params: { q, location } });
       setEvents(res.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to fetch events. Please try again.');
+      toast.error(err.message || 'Failed to fetch events');
     } finally {
       setLoading(false);
     }
   };
 
+  // Reset filters
   const fetchAllEvents = async () => {
     setQ('');
     setLocation('');
-    setLoading(true);
-    try {
-      const res = await API.get('/events');
-      setEvents(res.data);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to fetch events. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    fetchEvents();
   };
 
+  const onSearch = (e) => {
+    e.preventDefault();
+    fetchEvents();
+  };
+
+  // Initial load
   useEffect(() => {
     fetchEvents();
     fetchLocations();
   }, []);
 
-  const fetchLocations = async () => {
-    try {
-      const res = await API.get('/admin/locations');
-      
-      // Handle both response formats
-      let locationsData = [];
-      if (Array.isArray(res.data)) {
-        locationsData = res.data;
-      } else if (res.data && res.data.data && Array.isArray(res.data.data)) {
-        locationsData = res.data.data;
-      }
-      
-      setLocations(locationsData.map(loc => loc.displayName));
-    } catch (err) {
-      // Fallback to empty array if locations fetch fails - this is not critical
-      setLocations([]);
-    }
-  };
+  // Real-time updates via socket
+  // inside useEffect for socket in Events.jsx
+useEffect(() => {
+  const socketBase = import.meta.env.VITE_SOCKET_URL
+    ? import.meta.env.VITE_SOCKET_URL
+    : (import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000');
 
-  useEffect(() => {
-    socket.on('seatUpdate', (data) => {
-      setEvents(prev =>
-        prev.map(e =>
-          e._id === data.eventId ? { ...e, available_seats: data.available_seats } : e
-        )
-      );
-    });
-    return () => socket.off('seatUpdate');
-  }, []);
+  const socket = io(socketBase, {
+    transports: ['websocket', 'polling'],
+    path: '/socket.io',
+    // optional: autoConnect true
+  });
 
-  const onSearch = async (e) => {
-    e.preventDefault();
+  socket.on('connect', () => {
+    console.log('socket connected (client):', socket.id, 'to', socketBase);
+  });
+
+  socket.on('connect_error', (err) => {
+    console.warn('socket connect_error', err);
+  });
+
+  socket.on('eventUpdated', (payload) => {
+    console.log('received eventUpdated', payload);
     fetchEvents();
+  });
+
+  return () => {
+    socket.off('eventUpdated');
+    socket.disconnect();
   };
+}, []);
+
 
   return (
     <div className="min-h-screen">
       <div className="max-w-6xl mx-auto px-4 py-6">
+
         {/* Search Form */}
         <motion.form
           initial={{ opacity: 0, y: -20 }}
@@ -94,13 +110,14 @@ export default function Events() {
         >
           <input
             value={q}
-            onChange={e => setQ(e.target.value)}
+            onChange={(e) => setQ(e.target.value)}
             placeholder="Search events"
             className="border p-2 rounded flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
+
           <select
             value={location}
-            onChange={e => setLocation(e.target.value)}
+            onChange={(e) => setLocation(e.target.value)}
             className="border p-2 rounded w-full md:w-48 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
           >
             <option value="">All Locations</option>
@@ -110,6 +127,7 @@ export default function Events() {
               </option>
             ))}
           </select>
+
           <button
             type="submit"
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
@@ -136,6 +154,8 @@ export default function Events() {
             ))}
           </div>
         ) : events.length > 0 ? (
+
+          // Events List
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -153,7 +173,10 @@ export default function Events() {
               </motion.div>
             ))}
           </motion.div>
+
         ) : (
+
+          // No Results Found
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -173,10 +196,14 @@ export default function Events() {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No events found</h3>
+
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No events found
+            </h3>
             <p className="text-sm text-gray-600 mb-6">
               Try changing your search or view all available events.
             </p>
+
             <button
               onClick={fetchAllEvents}
               className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"

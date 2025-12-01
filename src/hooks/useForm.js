@@ -8,53 +8,51 @@ export function useForm(initialValues = {}, validationSchema = {}) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = useCallback((name, value) => {
-    setValues((prev) => ({
+    setValues(prev => ({
       ...prev,
       [name]: value,
     }));
 
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: null,
-      }));
-    }
-  }, [errors]);
+    // Clear error safely (no stale dependency)
+    setErrors(prev => ({
+      ...prev,
+      [name]: null,
+    }));
+  }, []);
 
   const handleBlur = useCallback((name) => {
-    setTouched((prev) => ({
+    setTouched(prev => ({
       ...prev,
       [name]: true,
     }));
 
-    // Validate field on blur
     if (validationSchema[name]) {
       const error = validationSchema[name](values[name]);
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
         [name]: error,
       }));
     }
   }, [validationSchema, values]);
 
-  const validateField = useCallback((name) => {
-    if (validationSchema[name]) {
+  const validateField = useCallback(
+    (name) => {
+      if (!validationSchema[name]) return true;
+
       const error = validationSchema[name](values[name]);
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
         [name]: error,
       }));
       return !error;
-    }
-    return true;
-  }, [validationSchema, values]);
+    },
+    [validationSchema, values]
+  );
 
   const validateAllFields = useCallback(() => {
     const newErrors = validateForm(values, validationSchema);
     setErrors(newErrors);
-    
-    // Mark all fields as touched
+
     const allTouched = Object.keys(validationSchema).reduce((acc, key) => {
       acc[key] = true;
       return acc;
@@ -64,45 +62,43 @@ export function useForm(initialValues = {}, validationSchema = {}) {
     return Object.keys(newErrors).length === 0;
   }, [values, validationSchema]);
 
-  const handleSubmit = useCallback((onSubmit) => {
-    return async (e) => {
-      if (e) {
-        e.preventDefault();
-      }
+  const handleSubmit = useCallback(
+    (onSubmit) => {
+      return async (e) => {
+        if (e) e.preventDefault();
 
-      const isValid = validateAllFields();
-      
-      if (!isValid) {
-        return;
-      }
+        if (!validateAllFields()) return;
 
-      setIsSubmitting(true);
-      try {
-        await onSubmit(values);
-      } catch (error) {
-        // Error is handled by the calling component
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-  }, [values, validateAllFields]);
+        setIsSubmitting(true);
+        try {
+          await onSubmit(values);
+        } finally {
+          setIsSubmitting(false);
+        }
+      };
+    },
+    [values, validateAllFields]
+  );
 
-  const reset = useCallback((newValues = initialValues) => {
-    setValues(newValues);
-    setErrors({});
-    setTouched({});
-    setIsSubmitting(false);
-  }, [initialValues]);
+  const reset = useCallback(
+    (newValues = initialValues) => {
+      setValues(newValues);
+      setErrors({});
+      setTouched({});
+      setIsSubmitting(false);
+    },
+    [initialValues]
+  );
 
   const setFieldValue = useCallback((name, value) => {
-    setValues((prev) => ({
+    setValues(prev => ({
       ...prev,
       [name]: value,
     }));
   }, []);
 
   const setFieldError = useCallback((name, error) => {
-    setErrors((prev) => ({
+    setErrors(prev => ({
       ...prev,
       [name]: error,
     }));

@@ -11,7 +11,7 @@ export default function Landing() {
         </svg>
       ),
       title: 'Real-Time Updates',
-      description: 'Get instant notifications about seat availability and booking confirmations with live updates.'
+      description: 'Get instant notifications about seat availability and booking confirmations with live updates.',
     },
     {
       icon: (
@@ -20,7 +20,7 @@ export default function Landing() {
         </svg>
       ),
       title: 'QR Code Tickets',
-      description: 'Download your tickets as QR codes for quick and contactless entry at events.'
+      description: 'Download your tickets as QR codes for quick and contactless entry at events.',
     },
     {
       icon: (
@@ -29,7 +29,7 @@ export default function Landing() {
         </svg>
       ),
       title: 'Secure Payments',
-      description: 'Book with confidence using our secure payment system with multiple payment options.'
+      description: 'Book with confidence using our secure payment system with multiple payment options.',
     },
     {
       icon: (
@@ -38,7 +38,7 @@ export default function Landing() {
         </svg>
       ),
       title: 'Easy Discovery',
-      description: 'Find events by location, category, or date with our powerful search and filter system.'
+      description: 'Find events by location, category, or date with our powerful search and filter system.',
     },
     {
       icon: (
@@ -47,7 +47,7 @@ export default function Landing() {
         </svg>
       ),
       title: 'Mobile Friendly',
-      description: 'Access Eventify from any device with our fully responsive design and mobile app.'
+      description: 'Access Eventify from any device with our fully responsive design and mobile app.',
     },
     {
       icon: (
@@ -56,15 +56,15 @@ export default function Landing() {
         </svg>
       ),
       title: 'Community',
-      description: 'Join thousands of event-goers and organizers in our growing community.'
-    }
+      description: 'Join thousands of event-goers and organizers in our growing community.',
+    },
   ];
 
   const stats = [
     { number: '10K+', label: 'Events Hosted' },
     { number: '50K+', label: 'Happy Customers' },
     { number: '100+', label: 'Cities Covered' },
-    { number: '4.8★', label: 'Average Rating' }
+    { number: '4.8★', label: 'Average Rating' },
   ];
 
   return (
@@ -72,6 +72,7 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 opacity-10"></div>
+
         <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl p-8 md:p-16 mb-12 shadow-2xl">
           <motion.div
             initial={{ y: 30, opacity: 0 }}
@@ -87,15 +88,17 @@ export default function Landing() {
             >
               Discover Amazing Events Near You
             </motion.h1>
+
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.6 }}
               className="text-lg md:text-xl lg:text-2xl mb-8 text-indigo-100 max-w-3xl"
             >
-              Browse thousands of events, book tickets instantly, and get QR codes delivered to your inbox. 
+              Browse thousands of events, book tickets instantly, and get QR codes delivered to your inbox.
               Experience seamless event booking with real-time updates and secure payments.
             </motion.p>
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -108,6 +111,7 @@ export default function Landing() {
               >
                 Browse Events
               </Link>
+
               <Link
                 to="/auth"
                 className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-indigo-600 transition-all duration-200 font-semibold text-lg text-center"
@@ -139,7 +143,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features */}
       <section className="mb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -151,7 +155,7 @@ export default function Landing() {
             Why Choose Eventify?
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            We make event booking simple, secure, and enjoyable with cutting-edge features
+            We make event booking simple, secure, and enjoyable with cutting-edge features.
           </p>
         </motion.div>
 
@@ -167,7 +171,9 @@ export default function Landing() {
               <div className="text-indigo-600 mb-4 group-hover:scale-110 transition-transform duration-300">
                 {feature.icon}
               </div>
+
               <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
+
               <p className="text-gray-600 leading-relaxed">{feature.description}</p>
             </motion.div>
           ))}
@@ -185,9 +191,11 @@ export default function Landing() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Start Your Journey?
           </h2>
+
           <p className="text-lg md:text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of happy customers who trust Eventify for their event booking needs
+            Join thousands of happy customers who trust Eventify for their event booking needs.
           </p>
+
           <Link
             to="/events"
             className="inline-block bg-white text-indigo-600 px-8 py-4 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 font-semibold text-lg"
@@ -197,7 +205,7 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* How It Works Section */}
+      {/* How It Works */}
       <section className="mb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -208,8 +216,9 @@ export default function Landing() {
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             How It Works
           </h2>
+
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Book your next event in three simple steps
+            Book your next event in three simple steps.
           </p>
         </motion.div>
 
@@ -218,18 +227,18 @@ export default function Landing() {
             {
               step: '1',
               title: 'Browse Events',
-              description: 'Explore our curated collection of events across various categories and locations'
+              description: 'Explore our curated collection of events across various categories and locations.',
             },
             {
               step: '2',
               title: 'Book Tickets',
-              description: 'Select your preferred seats and complete secure payment in just a few clicks'
+              description: 'Select your preferred seats and complete secure payment in just a few clicks.',
             },
             {
               step: '3',
               title: 'Get QR Code',
-              description: 'Receive your digital ticket with QR code instantly via email and mobile'
-            }
+              description: 'Receive your digital ticket instantly via email and mobile.',
+            },
           ].map((item, index) => (
             <motion.div
               key={index}
@@ -242,9 +251,12 @@ export default function Landing() {
                 <div className="absolute -top-4 -left-4 w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full flex items-center justify-center text-xl font-bold shadow-lg">
                   {item.step}
                 </div>
+
                 <h3 className="text-xl font-bold text-gray-900 mb-3 mt-4">{item.title}</h3>
+
                 <p className="text-gray-600 leading-relaxed">{item.description}</p>
               </div>
+
               {index < 2 && (
                 <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
                   <svg className="w-8 h-8 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

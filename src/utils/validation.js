@@ -1,98 +1,53 @@
-// Validation helper functions
-
 export const validators = {
   required: (value) => {
-    if (!value || (typeof value === 'string' && value.trim() === '')) {
-      return 'This field is required';
-    }
+    if (value === null || value === undefined) return "This field is required";
+    if (typeof value === "string" && value.trim() === "") return "This field is required";
     return null;
   },
 
   email: (value) => {
     if (!value) return null;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) {
-      return 'Please enter a valid email address';
-    }
-    return null;
+    return emailRegex.test(value) ? null : "Please enter a valid email address";
   },
 
   mobile: (value) => {
     if (!value) return null;
-    const mobileRegex = /^[6-9]\d{9}$/;
-    if (!mobileRegex.test(value.replace(/\s/g, ''))) {
-      return 'Please enter a valid 10-digit mobile number';
-    }
-    return null;
+    const cleaned = value.replace(/\D/g, "");
+    return /^[6-9]\d{9}$/.test(cleaned)
+      ? null
+      : "Please enter a valid 10-digit mobile number";
   },
 
-  minLength: (min) => (value) => {
-    if (!value) return null;
-    if (value.length < min) {
-      return `Must be at least ${min} characters`;
-    }
-    return null;
-  },
+  minLength: (min) => (value) =>
+    value && value.length < min ? `Must be at least ${min} characters` : null,
+
+  maxLength: (max) => (value) =>
+    value && value.length > max ? `Must be no more than ${max} characters` : null,
 
   password: (value) => {
     if (!value) return null;
-    if (value.length < 8) {
-      return 'Password must be at least 8 characters long';
-    }
-    if (!/(?=.*[a-z])/.test(value)) {
-      return 'Password must contain at least one lowercase letter';
-    }
-    if (!/(?=.*[A-Z])/.test(value)) {
-      return 'Password must contain at least one uppercase letter';
-    }
-    if (!/(?=.*\d)/.test(value)) {
-      return 'Password must contain at least one number';
-    }
+    if (value.length < 8) return "Password must be at least 8 characters long";
+    if (!/[a-z]/.test(value)) return "Password must contain at least one lowercase letter";
+    if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter";
+    if (!/\d/.test(value)) return "Password must contain at least one number";
     return null;
   },
 
-  maxLength: (max) => (value) => {
-    if (!value) return null;
-    if (value.length > max) {
-      return `Must be no more than ${max} characters`;
-    }
-    return null;
-  },
+  number: (value) =>
+    value && isNaN(value) ? "Must be a valid number" : null,
 
-  pattern: (regex, message) => (value) => {
-    if (!value) return null;
-    if (!regex.test(value)) {
-      return message || 'Invalid format';
-    }
-    return null;
-  },
+  min: (minValue) => (value) =>
+    value && Number(value) < minValue ? `Must be at least ${minValue}` : null,
 
-  number: (value) => {
-    if (!value) return null;
-    if (isNaN(value)) {
-      return 'Must be a valid number';
-    }
-    return null;
-  },
+  max: (maxValue) => (value) =>
+    value && Number(value) > maxValue ? `Must be no more than ${maxValue}` : null,
 
-  min: (minValue) => (value) => {
-    if (!value) return null;
-    if (Number(value) < minValue) {
-      return `Must be at least ${minValue}`;
-    }
-    return null;
-  },
-
-  max: (maxValue) => (value) => {
-    if (!value) return null;
-    if (Number(value) > maxValue) {
-      return `Must be no more than ${maxValue}`;
-    }
-    return null;
-  },
+  pattern: (regex, message) => (value) =>
+    value && !regex.test(value) ? message || "Invalid format" : null,
 };
 
-// Compose multiple validators
+// Multiple validators
 export function composeValidators(...validators) {
   return (value) => {
     for (const validator of validators) {
@@ -103,17 +58,12 @@ export function composeValidators(...validators) {
   };
 }
 
-// Validate entire form based on schema
+// Whole form validation
 export function validateForm(values, schema) {
   const errors = {};
-  
-  for (const [field, rules] of Object.entries(schema)) {
-    const value = values[field];
-    const error = rules(value);
-    if (error) {
-      errors[field] = error;
-    }
+  for (const [field, rule] of Object.entries(schema)) {
+    const error = rule(values[field]);
+    if (error) errors[field] = error;
   }
-  
   return errors;
 }

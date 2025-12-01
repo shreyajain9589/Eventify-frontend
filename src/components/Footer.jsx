@@ -9,6 +9,7 @@ export default function Footer() {
   return (
     <footer className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-6 shadow-lg mt-12">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center px-6">
+
         {/* Logo & Info */}
         <div className="mb-4 md:mb-0 text-center md:text-left">
           <h2 className="text-xl font-bold">Eventify</h2>
@@ -23,12 +24,14 @@ export default function Footer() {
           <Link to="/events" className="hover:text-yellow-200 transition font-medium">
             Events
           </Link>
+
           {!isLoggedIn && (
             <Link to="/auth" className="hover:text-yellow-200 transition font-medium">
               Login/Register
             </Link>
           )}
         </div>
+
       </div>
     </footer>
   );
